@@ -1,19 +1,11 @@
 import pandas as pd
 import string
 import random
-import os
 import logging, datetime
 
-from pymilvus import connections, utility, Collection, CollectionSchema, FieldSchema,DataType
-from milvus import default_server
+from pymilvus import utility, Collection, CollectionSchema, FieldSchema,DataType
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-# from langchain_ibm import WatsonxEmbeddings
-from langchain_openai import OpenAIEmbeddings
 import streamlit as st
-from dotenv import load_dotenv
-from ibm_watsonx_ai.client import APIClient
-from ibm_watsonx_ai.foundation_models import Model
-from openai import OpenAI
 
 # for PDF Download 
 import tempfile
@@ -25,30 +17,6 @@ logging.basicConfig(filename=f'log/emb_{formatted_datetime}.log',
                     level=logging.INFO, 
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
-load_dotenv()
-
-OPENAI_API_KEY=     os.getenv("OPENAI_API_KEY")
-
-@st.cache_data
-def connect_to_milvus():
-    print('connecting to milvus lite...')
-    port_no = default_server.listen_port
-    connections.connect(host= 'localhost', port=str(port_no))
-    print("Milvus connected")
-
-
-@st.cache_resource
-def connect_openai_llm():
-    client = OpenAI()
-    return client
-
-@st.cache_resource
-def connect_openai_embedding():
-    openai_embedding = OpenAIEmbeddings(
-    model="text-embedding-3-large",
-    dimensions=768
-)
-    return openai_embedding
 
 
 @st.cache_data
@@ -71,7 +39,6 @@ def initiate_username():
     print('initiate username....')
     return 'a'+ username
 
-#------create milvus database
 def create_milvus_db(collection_name):
     item_id    = FieldSchema( name="id",         dtype=DataType.INT64,    is_primary=True, auto_id=True )
     text       = FieldSchema( name="text",       dtype=DataType.VARCHAR,  max_length= 50000             )
@@ -135,29 +102,6 @@ def format_pdf_reader(raw_data):
         pdf_text+=data.page_content+"\n"
     return pdf_text
 
-# #--------generate promt reday to prompt in model
-
-# def generate_prompt_en(question, context, model_type="llama-2"):
-#     output = f'''<|begin_of_text|><|start_header_id|>**system<|end_header_id|>`
-# You are a helpful, respectful Thai assistant. Always answer as helpfully as possible, while being safe. Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature. If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information.
-
-# You will receive HR Policy on user queries HR POLICY DETAILS, and QUESTION from user below. Answer the question in Thai.
-
-# HR POLICY DETAILS:
-# {context}
-# QUESTION: {question}
-
-# Answer the QUESTION use details about HR Policy from HR POLICY DETAILS, explain your reasonings if the question is not related to REFERENCE please Answer
-# “I don’t know the answer, it is not part of the provided HR Policy”
-# <|eot_id|><|start_header_id|>user<|end_header_id|>
-
-# hello<|eot_id|><|start_header_id|>assistant<|end_header_id|>
-
-# hello, I'm your HR Policy Assistance, please type your question<|eot_id|><|start_header_id|>user<|end_header_id|>
-
-# {question}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
-# '''
-#     return output   
 
 def generate_answer(openai_client, prompt):
     completion = openai_client.chat.completions.create(
@@ -165,7 +109,6 @@ def generate_answer(openai_client, prompt):
         messages= prompt
     )
     return completion.choices[0].message.content
-
 
 
 

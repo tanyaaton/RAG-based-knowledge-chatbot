@@ -1,4 +1,4 @@
-def prompt_EN(question, context):
+def generate_pdf_prompt(question, context):
     messages = {
         "messages": [
             {

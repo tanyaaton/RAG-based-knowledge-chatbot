@@ -1,7 +1,6 @@
 ipywidgets==8.0.7
 jupyter==1.0.0
 langchain==0.1.8
-langchai_ibm
 matplotlib==3.7.2
 numpy==1.24.2
 pandas==1.5.3
@@ -16,6 +15,5 @@ rouge==1.0.1
 PyMuPDF
 milvus==2.3.3
 streamlit==1.35.0
-huggingface-hub==0.23.2
-sentence_transformers==2.7.0
 -U langchain-community
+openai

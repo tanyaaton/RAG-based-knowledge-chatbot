@@ -8,12 +8,13 @@ from langchain.callbacks import StdOutCallbackHandler
 from PIL import Image
 
 # for Milvus 
-from pymilvus import connections, utility, Collection
+from pymilvus import utility, Collection
 
 # for function
-from function import (connect_to_milvus, connect_openai_llm, connect_openai_embedding, initiate_username, read_pdf, create_milvus_db, split_text_with_overlap)
-from function import (embedding_data, find_answer,generate_answer, display_hits_dataframe)
-from prompt import prompt_EN
+from connection import (connect_to_milvus, connect_openai_llm, connect_openai_embedding)
+from function import (initiate_username, read_pdf, create_milvus_db, split_text_with_overlap,
+            embedding_data, find_answer,generate_answer, display_hits_dataframe)
+from prompt import generate_pdf_prompt
 
 
 #---------- settings ----------- #
@@ -92,7 +93,7 @@ if uploaded_files :
         print('processing...')
         logging.info(user_question)
         hits = find_answer(user_question, collection, model_emb)
-        prompt = prompt_EN(user_question, [hits[0][i].text for i in range(4)])
+        prompt = generate_pdf_prompt(user_question, [hits[0][i].text for i in range(4)])
         logging.info(prompt)
         response = generate_answer(model_llm,prompt)
         st.text_area(label="Model Response", value=response, height=300)
