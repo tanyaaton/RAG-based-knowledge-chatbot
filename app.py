@@ -2,15 +2,9 @@ import logging
 import datetime
 import os
 
-#for UI
 import streamlit as st
-from langchain.callbacks import StdOutCallbackHandler
-from PIL import Image
-
-# for Milvus 
 from pymilvus import utility, Collection
 
-# for function
 from connection import (connect_to_milvus, connect_openai_llm, connect_openai_embedding)
 from function import (initiate_username, read_pdf, create_milvus_db, split_text_with_overlap,
             embedding_data, find_answer,generate_answer, display_hits_dataframe)
@@ -41,9 +35,7 @@ connect_to_milvus()
 model_llm = connect_openai_llm()
 model_emb = connect_openai_embedding()
 
-handler = StdOutCallbackHandler()
 
-# Sidebar contents
 # Sidebar contents
 with st.sidebar:
     st.title("🌷Welcome")

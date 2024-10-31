@@ -1,19 +1,12 @@
-ipywidgets==8.0.7
-jupyter==1.0.0
-langchain==0.1.8
-matplotlib==3.7.2
-numpy==1.24.2
-pandas==1.5.3
-plotly==5.15.0
-pypdf==3.12.2
-python-dotenv==1.0.0
-pydantic==1.10.15
-requests==2.31.0
-urllib3==1.26.11
-rouge==1.0.1
--U pymilvus==2.4.8
-PyMuPDF
-milvus==2.3.3
-streamlit==1.35.0
--U langchain-community
-openai
+ipywidgets==8.1.5
+matplotlib==3.9.2
+numpy==1.26.4
+pandas==2.2.3
+pypdf==5.1.0
+python-dotenv==1.0.1
+PyMuPDF==1.24.13
+milvus==2.3.5
+streamlit==1.39.0
+openai==1.53.0
+pylance==0.19.1
+# -U pymilvus
