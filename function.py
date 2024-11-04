@@ -2,6 +2,7 @@ import pandas as pd
 import string
 import random
 import logging, datetime
+import os
 
 from pymilvus import utility, Collection, CollectionSchema, FieldSchema,DataType
 from langchain.text_splitter import RecursiveCharacterTextSplitter

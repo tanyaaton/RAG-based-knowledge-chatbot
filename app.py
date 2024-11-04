@@ -9,7 +9,7 @@ from connection import (connect_to_milvus, connect_openai_llm, connect_openai_em
 from function import (initiate_username, read_pdf, create_milvus_db, split_text_with_overlap,
             embedding_data, find_answer,generate_answer, display_hits_dataframe)
 from prompt import generate_pdf_prompt
-
+from dco_intelligence import analyze_read
 
 #---------- settings ----------- #
 model_id_llm='gpt-4o'
@@ -66,13 +66,25 @@ if uploaded_files := st.file_uploader("please drop your PDF file", accept_multip
         print('----- collection already exist')
         collection = Collection(username)
     else:
-        text = read_pdf(uploaded_files)
-        chunks = split_text_with_overlap(text, 1000, 300)
-        logging.info(chunks)
-        print('----- create new collection')
-        collection = create_milvus_db(username)
-        print(collection)
-        collection = embedding_data(chunks, username, model_emb)
+        print(uploaded_files)
+        print(type(uploaded_files))
+        # bytes_data = uploaded_files.read()
+        # result = analyze_read(bytes_data)
+
+        for uploaded_file in uploaded_files:
+            uploaded_file.seek(0)  # Ensure the cursor is at the start
+        with st.spinner("Analyzing document..."):
+            analysis_result = analyze_read(uploaded_file)
+            st.text(analysis_result)
+
+        logging.info(analysis_result)
+        # text = read_pdf(uploaded_files)
+        # chunks = split_text_with_overlap(text, 1000, 300)
+        # logging.info(chunks)
+        # print('----- create new collection')
+        # collection = create_milvus_db(username)
+        # print(collection)
+        # collection = embedding_data(chunks, username, model_emb)
 else:
     utility.drop_collection(f'{username}')
     print('dropped collection')
