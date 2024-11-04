@@ -12,11 +12,11 @@ import streamlit as st
 import tempfile
 from langchain.document_loaders import PyPDFLoader
 
-now = datetime.datetime.now()
-formatted_datetime = now.strftime("%d-%m-%Y_%H%M")
-logging.basicConfig(filename=f'log/emb_{formatted_datetime}.log', 
-                    level=logging.INFO, 
-                    format='%(asctime)s - %(levelname)s - %(message)s')
+# now = datetime.datetime.now()
+# formatted_datetime = now.strftime("%d-%m-%Y_%H%M")
+# logging.basicConfig(filename=f'log/emb_{formatted_datetime}.log', 
+#                     level=logging.INFO, 
+#                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 

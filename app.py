@@ -1,6 +1,7 @@
 import logging
 import datetime
 import os
+import tempfile
 
 import streamlit as st
 from pymilvus import utility, Collection
@@ -10,6 +11,7 @@ from function import (initiate_username, read_pdf, create_milvus_db, split_text_
             embedding_data, find_answer,generate_answer, display_hits_dataframe)
 from prompt import generate_pdf_prompt
 from dco_intelligence import analyze_read
+from document_analyze import process_with_loader, adjust_chunk_size, split_using_markdown
 
 #---------- settings ----------- #
 model_id_llm='gpt-4o'
@@ -72,19 +74,24 @@ if uploaded_files := st.file_uploader("please drop your PDF file", accept_multip
         # result = analyze_read(bytes_data)
 
         for uploaded_file in uploaded_files:
-            uploaded_file.seek(0)  # Ensure the cursor is at the start
-        with st.spinner("Analyzing document..."):
-            analysis_result = analyze_read(uploaded_file)
-            st.text(analysis_result)
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
+                temp_file.write(uploaded_file.read())  # Write to a temporary file
+                temp_file_path = temp_file.name
 
-        logging.info(analysis_result)
-        # text = read_pdf(uploaded_files)
-        # chunks = split_text_with_overlap(text, 1000, 300)
-        # logging.info(chunks)
-        # print('----- create new collection')
-        # collection = create_milvus_db(username)
-        # print(collection)
-        # collection = embedding_data(chunks, username, model_emb)
+            with st.spinner("Analyzing document..."):
+                # Process the file using AzureAIDocumentIntelligenceLoader
+                docs = process_with_loader(temp_file_path)
+                splits = split_using_markdown(docs)
+                chunks = adjust_chunk_size(splits)
+
+                # text = read_pdf(uploaded_files)
+                # chunks = split_text_with_overlap(text, 1000, 300)
+                print('📬',chunks)
+                print('----- create new collection')
+                collection = create_milvus_db(username)
+                print(collection)
+            
+            collection = embedding_data(chunks, username, model_emb)
 else:
     utility.drop_collection(f'{username}')
     print('dropped collection')
