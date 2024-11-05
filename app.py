@@ -33,7 +33,6 @@ st.set_page_config(
 st.header("Retrieval Augmented Generation 💬")
 
 connect_to_milvus()
-# model_llm = connect_watsonx_llm(model_id_llm)
 model_llm = connect_openai_llm()
 model_emb = connect_openai_embedding()
 
@@ -56,56 +55,63 @@ with st.sidebar:
     ''')
 
 
-#===========================================================================================
+# Initialize session state for tracking files with unique usernames
+if "uploaded_files" not in st.session_state:
+    st.session_state["uploaded_files"] = {}
 
-username = initiate_username()
-logging.info(username)
+# File upload section
+st.subheader("🗂️ Upload a New PDF File")
+uploaded_file = st.file_uploader("Drop your PDF file here", accept_multiple_files=False)
 
-if uploaded_files := st.file_uploader("please drop your PDF file", accept_multiple_files=True):
-    print(utility.list_collections())
-    print('======',username,'======')
-    if (username in utility.list_collections()):
-        print('----- collection already exist')
-        collection = Collection(username)
+if uploaded_file:
+    file_name = uploaded_file.name
+    username = initiate_username()  # Generate a unique username for each file
+    print(f'Generated Username: {username}, File Name: {file_name}')
+
+    # Check if the file has already been processed
+    if file_name in st.session_state["uploaded_files"]:
+        collection = st.session_state["uploaded_files"][file_name]["collection"]
+        st.info(f"The file '{file_name}' has already been uploaded.")
     else:
-        print(uploaded_files)
-        print(type(uploaded_files))
-        # bytes_data = uploaded_files.read()
-        # result = analyze_read(bytes_data)
+        # Process and embed the document
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
+            temp_file.write(uploaded_file.read())
+            temp_file_path = temp_file.name
 
-        for uploaded_file in uploaded_files:
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
-                temp_file.write(uploaded_file.read())  # Write to a temporary file
-                temp_file_path = temp_file.name
+        with st.spinner("Analyzing document..."):
+            docs = process_with_loader(temp_file_path)
+            splits = split_using_markdown(docs)
+            chunks = adjust_chunk_size(splits)
 
-            with st.spinner("Analyzing document..."):
-                # Process the file using AzureAIDocumentIntelligenceLoader
-                docs = process_with_loader(temp_file_path)
-                splits = split_using_markdown(docs)
-                chunks = adjust_chunk_size(splits)
+            # Create a new collection in Milvus
+            # collection = create_milvus_db(username, file_name)
+            collection = embedding_data(chunks, username, model_emb, file_name)
+            print('----- New collection created')
 
-                # text = read_pdf(uploaded_files)
-                # chunks = split_text_with_overlap(text, 1000, 300)
-                print('📬',chunks)
-                print('----- create new collection')
-                collection = create_milvus_db(username)
-                print(collection)
-            
-            collection = embedding_data(chunks, username, model_emb)
+        # Store the unique username and collection in session state
+        st.session_state["uploaded_files"][file_name] = {
+            "username": username,
+            "collection": collection
+        }
+    # st.success(f"File '{file_name}' has been processed and stored.")
+
+# File selection section
+if st.session_state["uploaded_files"]:
+    selected_file = st.selectbox("Or select a previous file to use:", options=list(st.session_state["uploaded_files"].keys()))
+
+    if selected_file:
+        selected_data = st.session_state["uploaded_files"][selected_file]
+        collection = selected_data["collection"]
+        print('===',collection, selected_data)
+        # st.info(f"You selected the file: {selected_file}")
+
+        # Question answering section for the selected file
+        st.subheader("📬 Ask any question based on the document")
+        if user_question := st.text_input("Question"):
+            hits = find_answer(user_question, collection, model_emb)
+            prompt = generate_pdf_prompt(user_question, [hits[0][i].text for i in range(4)])
+            response = generate_answer(model_llm, prompt)
+            st.text_area(label="Model Response", value=response, height=300)
+            display_hits_dataframe(hits)
 else:
-    utility.drop_collection(f'{username}')
-    print('dropped collection')
-
-if uploaded_files :
-    print('ready for input...')
-    if user_question := st.text_input(
-        "Ask any question:"
-    ): 
-        print('processing...')
-        logging.info(user_question)
-        hits = find_answer(user_question, collection, model_emb)
-        prompt = generate_pdf_prompt(user_question, [hits[0][i].text for i in range(4)])
-        logging.info(prompt)
-        response = generate_answer(model_llm,prompt)
-        st.text_area(label="Model Response", value=response, height=300)
-        display_hits_dataframe(hits)
+    st.warning("No previously uploaded files available.")

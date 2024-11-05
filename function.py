@@ -33,18 +33,17 @@ def read_pdf(uploaded_files):
             docs = format_pdf_reader(data)
             return docs
 
-@st.cache_data
 def initiate_username():
     characters = string.ascii_letters + string.digits + '_'
     username = ''.join(random.choice(characters) for _ in range(random.randint(5, 32)))
     print('initiate username....')
     return 'a'+ username
 
-def create_milvus_db(collection_name):
+def create_milvus_db(collection_name, file_name):
     item_id    = FieldSchema( name="id",         dtype=DataType.INT64,    is_primary=True, auto_id=True )
     text       = FieldSchema( name="text",       dtype=DataType.VARCHAR,  max_length= 50000             )
     embeddings = FieldSchema( name="embeddings", dtype=DataType.FLOAT_VECTOR,    dim=768                )
-    schema     = CollectionSchema( fields=[item_id, text, embeddings], description="Inserted policy from user", enable_dynamic_field=True )
+    schema     = CollectionSchema( fields=[item_id, text, embeddings], description=file_name, enable_dynamic_field=True )
     collection = Collection( name=collection_name, schema=schema, using='default' )
     return collection
 
@@ -73,13 +72,13 @@ def split_text_with_overlap(text, chunk_size, overlap_size):
     return chunks
 
 
-def embedding_data(chunks, collection_name, model_emb):
+def embedding_data(chunks, collection_name, model_emb, file_name):
     print('embedding...')
     vector  = model_emb.embed_documents(chunks) # embedding chunks of text
     logging.info('no. of chunks : ', len(chunks))
     logging.info('storing data in Milvus vector database...')
     logging.info([chunks,vector])
-    collection = create_milvus_db(collection_name)
+    collection = create_milvus_db(collection_name, file_name)
     collection.insert([chunks,vector])
     collection.create_index(field_name="embeddings",
                             index_params={"metric_type":"IP","index_type":"IVF_FLAT","params":{"nlist":16384}})
