@@ -5,3 +5,4 @@ venv**/
 using**
 data**/
 **.log
+notebook/
