@@ -12,14 +12,6 @@ import streamlit as st
 import tempfile
 from langchain.document_loaders import PyPDFLoader
 
-# now = datetime.datetime.now()
-# formatted_datetime = now.strftime("%d-%m-%Y_%H%M")
-# logging.basicConfig(filename=f'log/emb_{formatted_datetime}.log', 
-#                     level=logging.INFO, 
-#                     format='%(asctime)s - %(levelname)s - %(message)s')
-
-
-
 @st.cache_data
 def read_pdf(uploaded_files):
     for uploaded_file in uploaded_files:
@@ -75,7 +67,6 @@ def split_text_with_overlap(text, chunk_size, overlap_size):
 def embedding_data(chunks, collection_name, model_emb, file_name):
     print('embedding...')
     vector  = model_emb.embed_documents(chunks) # embedding chunks of text
-    logging.info('no. of chunks : ', len(chunks))
     logging.info('storing data in Milvus vector database...')
     logging.info([chunks,vector])
     collection = create_milvus_db(collection_name, file_name)

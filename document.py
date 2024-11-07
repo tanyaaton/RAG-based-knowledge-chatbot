@@ -5,18 +5,9 @@ load_dotenv()
 doc_intelligence_endpoint = os.getenv("AZURE_DOC_ENDPOINT")
 doc_intelligence_key = os.getenv("AZURE_DOC_KEY")
 
-# from langchain import hub
-# from langchain_openai import AzureChatOpenAI
 from langchain_community.document_loaders import AzureAIDocumentIntelligenceLoader
-# from langchain_openai import AzureOpenAIEmbeddings
-# from langchain.schema import StrOutputParser
-# from langchain.schema.runnable import RunnablePassthrough
 from langchain.text_splitter import MarkdownHeaderTextSplitter
-# from langchain.vectorstores.azuresearch import AzureSearch
 
-# Initiate Azure AI Document Intelligence to load the document. You can either specify file_path or url_path to load the document.
-# loader = AzureAIDocumentIntelligenceLoader(file_path="dataset_pdf/Data Team Organization _ The GitLab Handbook.pdf", api_key = doc_intelligence_key, api_endpoint = doc_intelligence_endpoint, api_model="prebuilt-layout")
-# docs = loader.load()
 
 def split_using_markdown(docs):
 # Split the document into chunks base on markdown headers.

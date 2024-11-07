@@ -4,14 +4,12 @@ import os
 import tempfile
 
 import streamlit as st
-from pymilvus import utility, Collection
 
 from connection import (connect_to_milvus, connect_openai_llm, connect_openai_embedding)
 from function import (initiate_username, read_pdf, create_milvus_db, split_text_with_overlap,
             embedding_data, find_answer,generate_answer, display_hits_dataframe)
 from prompt import generate_pdf_prompt
-from dco_intelligence import analyze_read
-from document_analyze import process_with_loader, adjust_chunk_size, split_using_markdown
+from document import process_with_loader, adjust_chunk_size, split_using_markdown
 
 #---------- settings ----------- #
 model_id_llm='gpt-4o'
@@ -60,7 +58,7 @@ if "uploaded_files" not in st.session_state:
     st.session_state["uploaded_files"] = {}
 
 # File upload section
-st.subheader("🗂️ Upload a New PDF File")
+# st.subheader("🗂️ Upload a New PDF File")
 uploaded_file = st.file_uploader("Drop your PDF file here", accept_multiple_files=False)
 
 if uploaded_file:
